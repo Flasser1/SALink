@@ -130,7 +130,7 @@ public class LinkManager {
         return minecraftUUIDs;
     }
 
-    public List<String> getLinkedAll(UUID minecraftUUID) {
+    public List<LinkedAccount> getLinkedAll(UUID minecraftUUID) {
         List<LinkedAccount> accounts = new ArrayList<>();
 
         if (!SQLManager.isConnected()) {
