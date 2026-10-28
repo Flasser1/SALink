@@ -1,0 +1,3 @@
+name: SALink
+version: '${project.version}'
+main: dk.flasser.salink.SALink

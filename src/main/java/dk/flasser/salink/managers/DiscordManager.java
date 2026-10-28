@@ -1,0 +1,122 @@
+package dk.flasser.salink.managers;
+
+import dk.flasser.salink.SALink;
+import eu.okaeri.injector.annotation.Inject;
+import eu.okaeri.platform.core.annotation.Component;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+
+import java.util.UUID;
+
+@Component
+public class DiscordManager extends ListenerAdapter {
+    private @Inject SALink saLink;
+    private @Inject LinkManager linkManager;
+    private @Inject CacheManager cacheManager;
+
+    @Override
+    public void onReady(ReadyEvent event) {
+        String guildId = saLink.getConfig()
+                .getString("discord.guild-id");
+
+        Guild guild = event.getJDA().getGuildById(guildId);
+
+        if (guild == null) {
+            saLink.getLogger().warning(
+                    "Botten kunne ikke finde discord serveren."
+            );
+            return;
+        }
+
+        guild.upsertCommand(
+                "link",
+                "Link din konto."
+        ).addOption(
+                OptionType.STRING,
+                "kode",
+                "Din link-kode",
+                true
+        ).queue(
+                command -> saLink.getLogger().info(
+                        "Registered /link command!"
+                ),
+                error -> saLink.getLogger().severe(
+                        "Failed to register /link: "
+                                + error.getMessage()
+                )
+        );
+
+        guild.upsertCommand(
+                "unlink",
+                "Unlink din konto."
+        ).addOption(
+                OptionType.STRING,
+                "minecraft-navn",
+                "Dit minecraft-navn",
+                true
+        ).queue(
+            command -> saLink.getLogger().info(
+                    "Registered /unlink command!"
+            ),
+            error -> saLink.getLogger().severe(
+                    "Failed to register /unlink: "
+                            + error.getMessage()
+            )
+        );
+    }
+
+    @Override
+    public void onSlashCommandInteraction(
+            SlashCommandInteractionEvent event) {
+
+        if (event.getName().equals("link")) {
+            String code = event.getOption("kode").getAsString();
+
+            if (!cacheManager.containsCodeCache(code)) {
+                event.reply("Denne kode findes ikke, prøv igen.").setEphemeral(true).queue();
+                return;
+            }
+
+            UUID uuid = cacheManager.getCode(code);
+            Member member = event.getMember();
+
+            assert member != null;
+            linkManager.addLink(member.getId(), uuid);
+
+            event.getGuild().modifyNickname(
+                    member,
+                    Bukkit.getOfflinePlayer(uuid).getName()
+            ).queue();
+
+            event.reply("Du er nu linket med din konto.").setEphemeral(true).queue();
+        }
+
+        if (event.getName().equals("unlink")) {
+            String name = event.getOption("minecraft-navn").getAsString();
+            OfflinePlayer player = Bukkit.getOfflinePlayer(name);
+            Member member = event.getMember();
+
+            if (!linkManager.isLinked(member.getId(), player.getUniqueId())) {
+                event.reply("Du er ikke linket med denne konto.").setEphemeral(true).queue();
+                return;
+            }
+
+            linkManager.removeLink(member.getId(), player.getUniqueId());
+            assert member != null;
+            event.getGuild().modifyNickname(
+                    member,
+                    null
+            ).queue();
+
+            event.reply("Du er nu unlinket.").setEphemeral(true).queue();
+        }
+    }
+}
