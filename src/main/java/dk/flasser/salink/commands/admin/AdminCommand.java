@@ -65,7 +65,7 @@ public class AdminCommand {
                         });
 
                         for (LinkManager.LinkedAccount account : accounts) {
-                            player.sendMessage( "§7"+account.ID+" - "+Bukkit.getOfflinePlayer(UUID.fromString(account.ID))+" - "+new Date(account.timeDate));
+                            player.sendMessage( "§7"+account.ID+" - "+Bukkit.getOfflinePlayer(UUID.fromString(account.ID)).getName()+" - "+new Date(account.timeDate));
                         }
                     });
                 },

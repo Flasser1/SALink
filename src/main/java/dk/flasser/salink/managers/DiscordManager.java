@@ -14,6 +14,8 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -78,45 +80,83 @@ public class DiscordManager extends ListenerAdapter {
             SlashCommandInteractionEvent event) {
 
         if (event.getName().equals("link")) {
-            String code = event.getOption("kode").getAsString();
+            Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
+                String code = event.getOption("kode").getAsString();
 
-            if (!cacheManager.containsCodeCache(code)) {
-                event.reply("Denne kode findes ikke, prøv igen.").setEphemeral(true).queue();
-                return;
-            }
+                if (!cacheManager.containsCodeCache(code)) {
+                    event.reply("Denne kode findes ikke, prøv igen.").setEphemeral(true).queue();
+                    return;
+                }
 
-            UUID uuid = cacheManager.getCode(code);
-            Member member = event.getMember();
+                UUID uuid = cacheManager.getCode(code);
+                Member member = event.getMember();
 
-            assert member != null;
-            linkManager.addLink(member.getId(), uuid);
+                assert member != null;
+                linkManager.addLink(member.getId(), uuid);
 
-            event.getGuild().modifyNickname(
-                    member,
-                    Bukkit.getOfflinePlayer(uuid).getName()
-            ).queue();
+                Bukkit.getScheduler().runTask(saLink, () -> {
+                    event.getGuild().modifyNickname(
+                            member,
+                            Bukkit.getOfflinePlayer(uuid).getName()
+                    ).queue();
 
-            event.reply("Du er nu linket med din konto.").setEphemeral(true).queue();
+                    event.reply("Du er nu linket med din konto.").setEphemeral(true).queue();
+                });
+            });
         }
 
         if (event.getName().equals("unlink")) {
             String name = event.getOption("minecraft-navn").getAsString();
             OfflinePlayer player = Bukkit.getOfflinePlayer(name);
-            Member member = event.getMember();
 
-            if (!linkManager.isLinked(member.getId(), player.getUniqueId())) {
-                event.reply("Du er ikke linket med denne konto.").setEphemeral(true).queue();
-                return;
-            }
+            Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
+                Member member = event.getMember();
 
-            linkManager.removeLink(member.getId(), player.getUniqueId());
-            assert member != null;
-            event.getGuild().modifyNickname(
-                    member,
-                    null
-            ).queue();
+                if (!linkManager.isLinked(member.getId(), player.getUniqueId())) {
+                    event.reply("Du er ikke linket med denne konto.").setEphemeral(true).queue();
+                    return;
+                }
 
-            event.reply("Du er nu unlinket.").setEphemeral(true).queue();
+                linkManager.removeLink(member.getId(), player.getUniqueId());
+                assert member != null;
+                event.getGuild().modifyNickname(
+                        member,
+                        null
+                ).queue();
+
+                event.reply("Du er nu unlinket.").setEphemeral(true).queue();
+            });
+        }
+
+        if (event.getName().equals("logsdiscord")) {
+            Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
+                String target = event.getOption("discord-id").getAsString();
+
+                List<LinkManager.LinkedAccount> accounts = linkManager.getLinkedAll(target);
+
+                if (accounts.isEmpty()) {
+                    event.reply("Denne bruger har ingen linkede konti").setEphemeral(true).queue();
+                    return;
+                }
+
+                saLink.getJDA().retrieveUserById(target).queue(
+                    user -> {
+                        String username = user.getName();
+                        StringBuilder msg = new StringBuilder("Logs for " + username + "\n");
+
+                        Bukkit.getScheduler().runTask(saLink, () -> {
+                            for (LinkManager.LinkedAccount account : accounts) {
+                                msg.append("- ").append(account.ID).append(" - ").append(Bukkit.getOfflinePlayer(UUID.fromString(account.ID)).getName()).append(" - ").append(new Date(account.timeDate)).append("\n");
+                            }
+
+                            event.reply(msg.toString()).setEphemeral(true).queue();
+                        });
+                    },
+                    error -> {
+                        event.reply("Denne bruger har ingen linkede konti.").setEphemeral(true).queue();
+                    }
+                );
+            });
         }
     }
 }

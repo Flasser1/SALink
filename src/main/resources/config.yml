@@ -1,3 +1,5 @@
 discord:
   token: "YOUR_BOT_TOKEN"
   guild-id: "YOUR_SERVER_ID"
+  admin-roles-ids:
+    -
