@@ -198,4 +198,8 @@ public class DiscordManager extends ListenerAdapter {
             });
         }
     }
+
+    public void reload() {
+        adminRoleIds = (List<String>) saLink.getConfig().getList("discord.admin-roles-ids");
+    }
 }

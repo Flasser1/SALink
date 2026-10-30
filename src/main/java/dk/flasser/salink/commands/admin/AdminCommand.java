@@ -1,6 +1,7 @@
 package dk.flasser.salink.commands.admin;
 
 import dk.flasser.salink.SALink;
+import dk.flasser.salink.managers.DiscordManager;
 import dk.flasser.salink.managers.LinkManager;
 
 import eu.okaeri.commands.annotation.Arg;
@@ -26,12 +27,14 @@ import java.util.UUID;
 @Async
 public class AdminCommand implements CommandService {
     private @Inject LinkManager linkManager;
+    private @Inject DiscordManager discordManager;
     private @Inject SALink saLink;
 
     @Executor(pattern = "reload")
     @Permission({"naturalstuff.*", "naturalcoinflip.*", "naturalcoinflip.cfa.*", "naturalcoinflip.cfa.reload"})
     public void reload(@Context Player player) {
         saLink.saveDefaultConfig();
+        discordManager.reload();
         player.sendMessage(new String[]{
                 "§8[ §f§lLINK §e§lSYSTEM §8]",
                 " §7Reloadede pluginnet."
