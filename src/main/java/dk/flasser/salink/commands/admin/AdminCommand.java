@@ -50,6 +50,13 @@ public class AdminCommand implements CommandService {
                 return;
             }
 
+            if (saLink.getJDA() == null) {
+                Bukkit.getScheduler().runTask(saLink, () -> {
+                    player.sendMessage("§cDiscord errored, have you set up your bot token?");
+                });
+                return;
+            }
+
             saLink.getJDA().retrieveUserById(target).queue(
                 user -> {
                     String username = user.getName();
