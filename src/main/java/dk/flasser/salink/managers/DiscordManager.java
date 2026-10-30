@@ -37,7 +37,7 @@ public class DiscordManager extends ListenerAdapter {
                     .getString("discord.guild-id");
 
             guild = event.getJDA().getGuildById(guildId);
-            adminRoleIds = (List<String>) saLink.getConfig().getList("discord.admin-roles-ids");
+            adminRoleIds = saLink.getConfig().getStringList("discord.admin-roles-ids");
 
             if (guild == null) {
                 saLink.getLogger().warning(
@@ -108,12 +108,11 @@ public class DiscordManager extends ListenerAdapter {
     }
 
     @Override
-    public void onSlashCommandInteraction(
-            SlashCommandInteractionEvent event) {
-
-        event.deferReply(true).queue();
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
 
         if (event.getName().equals("link")) {
+            event.deferReply(true).queue();
+
             Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
                 String code = event.getOption("kode").getAsString();
 
@@ -129,25 +128,26 @@ public class DiscordManager extends ListenerAdapter {
                 linkManager.addLink(member.getId(), uuid);
 
                 Bukkit.getScheduler().runTask(saLink, () -> {
-                    event.getGuild().modifyNickname(
-                            member,
-                            Bukkit.getOfflinePlayer(uuid).getName()
-                    ).queue(
-                            success -> {
-                                event.getHook().editOriginal("Du er nu linket med din konto.").queue();
-                            },
-                            error -> {
-                                if (error instanceof HierarchyException) {
-                                    event.getHook().editOriginal("Du er nu linket med din konto.").queue();
-                                    saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
-                                }
-                            }
-                    );
+                    try {
+                        event.getGuild().modifyNickname(
+                                member,
+                                Bukkit.getOfflinePlayer(uuid).getName()
+                        ).queue();
+                        event.getHook().editOriginal("Du er nu linket med din konto.").queue();
+                    } catch (HierarchyException e) {
+                        saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
+
+                        event.getHook().editOriginal(
+                                "Du er nu linket med din konto."
+                        ).queue();
+                    }
                 });
             });
         }
 
         if (event.getName().equals("unlink")) {
+            event.deferReply(true).queue();
+
             String name = event.getOption("minecraft-navn").getAsString();
             OfflinePlayer player = Bukkit.getOfflinePlayer(name);
 
@@ -161,28 +161,29 @@ public class DiscordManager extends ListenerAdapter {
 
                 linkManager.removeLink(member.getId(), player.getUniqueId());
                 assert member != null;
-                event.getGuild().modifyNickname(
-                        member,
-                        null
-                ).queue(
-                        success -> {
-                            event.getHook().editOriginal("Du er nu unlinket.").queue();
-                        },
-                        error -> {
-                            if (error instanceof HierarchyException) {
-                                event.getHook().editOriginal("Du er nu unlinket.").queue();
-                                saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
-                            }
-                        }
-                );
+                try {
+                    event.getGuild().modifyNickname(
+                            member,
+                            null
+                    ).queue();
+                    event.getHook().editOriginal("Du er nu unlinket.").queue();
+                } catch (HierarchyException e) {
+                    saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
+
+                    event.getHook().editOriginal(
+                            "Du er nu unlinket."
+                    ).queue();
+                }
             });
         }
 
         if (event.getName().equals("logsdiscord")) {
-            Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
-                boolean hasAccess = event.getMember().getRoles().stream().anyMatch(role -> adminRoleIds.contains(role.getId()));
+            event.deferReply(true).queue();
 
-                if (!hasAccess) {
+            Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
+                Member member = event.getMember();
+
+                if (member == null || adminRoleIds == null || member.getRoles().stream().noneMatch(role -> adminRoleIds.contains(role.getId()))) {
                     event.getHook().editOriginal("Du har ikke adgang til dette").queue();
                     return;
                 }
@@ -219,6 +220,6 @@ public class DiscordManager extends ListenerAdapter {
     }
 
     public void reload() {
-        adminRoleIds = (List<String>) saLink.getConfig().getList("discord.admin-roles-ids");
+        adminRoleIds = saLink.getConfig().getStringList("discord.admin-roles-ids");
     }
 }
