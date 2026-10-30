@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
@@ -110,12 +111,14 @@ public class DiscordManager extends ListenerAdapter {
     public void onSlashCommandInteraction(
             SlashCommandInteractionEvent event) {
 
+        event.deferReply(true).queue();
+
         if (event.getName().equals("link")) {
             Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
                 String code = event.getOption("kode").getAsString();
 
                 if (!cacheManager.containsCodeCache(code)) {
-                    event.reply("Denne kode findes ikke, prøv igen.").setEphemeral(true).queue();
+                    event.getHook().editOriginal("Denne kode findes ikke, prøv igen.").queue();
                     return;
                 }
 
@@ -129,9 +132,17 @@ public class DiscordManager extends ListenerAdapter {
                     event.getGuild().modifyNickname(
                             member,
                             Bukkit.getOfflinePlayer(uuid).getName()
-                    ).queue();
-
-                    event.reply("Du er nu linket med din konto.").setEphemeral(true).queue();
+                    ).queue(
+                            success -> {
+                                event.getHook().editOriginal("Du er nu linket med din konto.").queue();
+                            },
+                            error -> {
+                                if (error instanceof HierarchyException) {
+                                    event.getHook().editOriginal("Du er nu linket med din konto.").queue();
+                                    saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
+                                }
+                            }
+                    );
                 });
             });
         }
@@ -144,7 +155,7 @@ public class DiscordManager extends ListenerAdapter {
                 Member member = event.getMember();
 
                 if (!linkManager.isLinked(member.getId(), player.getUniqueId())) {
-                    event.reply("Du er ikke linket med denne konto.").setEphemeral(true).queue();
+                    event.getHook().editOriginal("Du er ikke linket med denne konto.").queue();
                     return;
                 }
 
@@ -153,9 +164,17 @@ public class DiscordManager extends ListenerAdapter {
                 event.getGuild().modifyNickname(
                         member,
                         null
-                ).queue();
-
-                event.reply("Du er nu unlinket.").setEphemeral(true).queue();
+                ).queue(
+                        success -> {
+                            event.getHook().editOriginal("Du er nu unlinket.").queue();
+                        },
+                        error -> {
+                            if (error instanceof HierarchyException) {
+                                event.getHook().editOriginal("Du er nu unlinket.").queue();
+                                saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
+                            }
+                        }
+                );
             });
         }
 
@@ -164,7 +183,7 @@ public class DiscordManager extends ListenerAdapter {
                 boolean hasAccess = event.getMember().getRoles().stream().anyMatch(role -> adminRoleIds.contains(role.getId()));
 
                 if (!hasAccess) {
-                    event.reply("Du har ikke adgang til dette").setEphemeral(true).queue();
+                    event.getHook().editOriginal("Du har ikke adgang til dette").queue();
                     return;
                 }
 
@@ -173,7 +192,7 @@ public class DiscordManager extends ListenerAdapter {
                 List<LinkManager.LinkedAccount> accounts = linkManager.getLinkedAll(target);
 
                 if (accounts.isEmpty()) {
-                    event.reply("Denne bruger har ingen linkede konti").setEphemeral(true).queue();
+                    event.getHook().editOriginal("Denne bruger har ingen linkede konti").queue();
                     return;
                 }
 
@@ -188,11 +207,11 @@ public class DiscordManager extends ListenerAdapter {
                                 else msg.append("- ").append(account.ID).append(" - ").append(Bukkit.getOfflinePlayer(UUID.fromString(account.ID)).getName()).append(" - ").append(new Date(account.timeDate)).append("\n");
                             }
 
-                            event.reply(msg.toString()).setEphemeral(true).queue();
+                            event.getHook().editOriginal(msg.toString()).queue();
                         });
                     },
                     error -> {
-                        event.reply("Denne bruger har ingen linkede konti.").setEphemeral(true).queue();
+                        event.getHook().editOriginal("Denne bruger har ingen linkede konti.").queue();
                     }
                 );
             });
