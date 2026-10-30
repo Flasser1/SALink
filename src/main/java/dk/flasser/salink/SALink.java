@@ -9,6 +9,7 @@ import eu.okaeri.platform.core.plan.ExecutionPhase;
 import eu.okaeri.platform.core.plan.Planned;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.internal.utils.JDALogger;
 import org.bstats.bukkit.Metrics;
 
 @Scan(deep = true)
@@ -45,6 +46,8 @@ public final class SALink extends OkaeriBukkitPlugin {
             getLogger().warning("Discord bot token is missing!");
             return;
         }
+
+        JDALogger.setFallbackLoggerEnabled(false);
 
         jda = JDABuilder.createDefault(token)
                 .addEventListeners(discordManager)
