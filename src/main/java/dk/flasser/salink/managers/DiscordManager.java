@@ -184,7 +184,8 @@ public class DiscordManager extends ListenerAdapter {
 
                         Bukkit.getScheduler().runTask(saLink, () -> {
                             for (LinkManager.LinkedAccount account : accounts) {
-                                msg.append("- ").append(account.ID).append(" - ").append(Bukkit.getOfflinePlayer(UUID.fromString(account.ID)).getName()).append(" - ").append(new Date(account.timeDate)).append("\n");
+                                if (account.active) msg.append("- ").append(account.ID).append(" - ").append(Bukkit.getOfflinePlayer(UUID.fromString(account.ID)).getName()).append(" - ").append(new Date(account.timeDate)).append(" - (Active)").append("\n");
+                                else msg.append("- ").append(account.ID).append(" - ").append(Bukkit.getOfflinePlayer(UUID.fromString(account.ID)).getName()).append(" - ").append(new Date(account.timeDate)).append("\n");
                             }
 
                             event.reply(msg.toString()).setEphemeral(true).queue();

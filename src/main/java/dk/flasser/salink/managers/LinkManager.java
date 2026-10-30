@@ -16,6 +16,7 @@ public class LinkManager {
 
     public static class LinkedAccount {
         public String ID;
+        public boolean active;
         public long timeDate;
     }
 
@@ -137,7 +138,7 @@ public class LinkManager {
             return null;
         }
 
-        String query = "SELECT DiscordID, TimeDate FROM Linked WHERE MinecraftUUID = ?";
+        String query = "SELECT DiscordID, TimeDate, Active FROM Linked WHERE MinecraftUUID = ?";
 
         try (PreparedStatement ps = SQLManager.getConnection().prepareStatement(query)) {
             ps.setString(1, minecraftUUID.toString());
@@ -147,6 +148,7 @@ public class LinkManager {
                     LinkedAccount linkedAccount = new LinkedAccount();
                     linkedAccount.ID = rs.getString("DiscordID");
                     linkedAccount.timeDate = rs.getLong("TimeDate");
+                    linkedAccount.active = rs.getBoolean("Active");
 
                     accounts.add(linkedAccount);
                 }
@@ -166,7 +168,7 @@ public class LinkManager {
             return null;
         }
 
-        String query = "SELECT MinecraftUUID, TimeDate FROM Linked WHERE DiscordID = ?";
+        String query = "SELECT MinecraftUUID, TimeDate, Active FROM Linked WHERE DiscordID = ?";
 
         try (PreparedStatement ps = SQLManager.getConnection().prepareStatement(query)) {
             ps.setString(1, discordID);
@@ -176,6 +178,7 @@ public class LinkManager {
                     LinkedAccount linkedAccount = new LinkedAccount();
                     linkedAccount.ID = rs.getString("MinecraftUUID");
                     linkedAccount.timeDate = rs.getLong("TimeDate");
+                    linkedAccount.active = rs.getBoolean("Active");
 
                     accounts.add(linkedAccount);
                 }

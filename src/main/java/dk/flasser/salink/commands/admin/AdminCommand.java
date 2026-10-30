@@ -79,7 +79,8 @@ public class AdminCommand implements CommandService {
                         });
 
                         for (LinkManager.LinkedAccount account : accounts) {
-                            player.sendMessage( "§7"+account.ID+" - "+Bukkit.getOfflinePlayer(UUID.fromString(account.ID)).getName()+" - "+new Date(account.timeDate));
+                            if (account.active) player.sendMessage( "§7"+account.ID+" - "+Bukkit.getOfflinePlayer(UUID.fromString(account.ID)).getName()+" - "+new Date(account.timeDate)+" - (Active)");
+                            else player.sendMessage( "§7"+account.ID+" - "+Bukkit.getOfflinePlayer(UUID.fromString(account.ID)).getName()+" - "+new Date(account.timeDate));
                         }
                     });
                 },
