@@ -7,6 +7,7 @@ import eu.okaeri.commands.annotation.Arg;
 import eu.okaeri.commands.annotation.Context;
 import eu.okaeri.commands.annotation.Executor;
 import eu.okaeri.commands.bukkit.annotation.Async;
+import eu.okaeri.commands.service.CommandService;
 import eu.okaeri.injector.annotation.Inject;
 import eu.okaeri.platform.core.annotation.Component;
 
@@ -22,7 +23,7 @@ import java.util.UUID;
         label = "linkadmin"
 )
 @Async
-public class AdminCommand {
+public class AdminCommand implements CommandService {
     private @Inject LinkManager linkManager;
     private @Inject SALink saLink;
 
