@@ -112,14 +112,14 @@ public class LinkManager {
             return null;
         }
 
-        String query = "SELECT DiscordID FROM Linked WHERE DiscordID = ? AND Active = 1";
+        String query = "SELECT MinecraftUUID FROM Linked WHERE DiscordID = ? AND Active = 1";
 
         try (PreparedStatement ps = SQLManager.getConnection().prepareStatement(query)) {
             ps.setString(1, discordID.toString());
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    minecraftUUIDs.add(rs.getString("DiscordID"));
+                    minecraftUUIDs.add(rs.getString("MinecraftUUID"));
                 }
             }
 
@@ -166,7 +166,7 @@ public class LinkManager {
             return null;
         }
 
-        String query = "SELECT DiscordID, TimeDate FROM Linked WHERE DiscordID = ?";
+        String query = "SELECT MinecraftUUID, TimeDate FROM Linked WHERE DiscordID = ?";
 
         try (PreparedStatement ps = SQLManager.getConnection().prepareStatement(query)) {
             ps.setString(1, discordID);
@@ -187,5 +187,4 @@ public class LinkManager {
 
         return accounts;
     }
-
 }
