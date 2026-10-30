@@ -14,11 +14,12 @@ import org.bstats.bukkit.Metrics;
 @Scan(deep = true)
 public final class SALink extends OkaeriBukkitPlugin {
     private @Inject SQLManager sqlManager;
+    private @Inject DiscordManager discordManager;
     private JDA jda;
 
     @Planned(ExecutionPhase.STARTUP)
     public void onStartup() {
-        getLogger().info("SALINK: STARTING UP");
+        getLogger().info("STARTING UP");
     }
 
     @Planned(ExecutionPhase.POST_SETUP)
@@ -28,15 +29,15 @@ public final class SALink extends OkaeriBukkitPlugin {
         int pluginId = 34980;
         Metrics metrics = new Metrics(this, pluginId);
 
-        this.getLogger().info("SALINK: CONNECTING TO DATABASE");
+        this.getLogger().info("CONNECTING TO DATABASE");
         sqlManager.connect();
 
         if (!sqlManager.isSetUp()) {
-            this.getLogger().info("SALINK: SETTING UP DATABASE");
+            this.getLogger().info("SETTING UP DATABASE");
             sqlManager.setUp();
         }
 
-        getLogger().info("SALINK: STARTING DISCORD BOT");
+        getLogger().info("STARTING DISCORD BOT");
         String token = getConfig().getString("discord.token");
 
         if (token == null || token.isEmpty()
@@ -46,13 +47,13 @@ public final class SALink extends OkaeriBukkitPlugin {
         }
 
         jda = JDABuilder.createDefault(token)
-                .addEventListeners(new DiscordManager())
+                .addEventListeners(discordManager)
                 .build();
     }
 
     @Planned(ExecutionPhase.SHUTDOWN)
     public void onShutdown() {
-        this.getLogger().info("SALINK: DISCONNECTING FROM DATABASE");
+        this.getLogger().info("DISCONNECTING FROM DATABASE");
         sqlManager.disconnect();
 
         getLogger().info(String.format(

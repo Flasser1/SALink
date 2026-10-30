@@ -29,16 +29,23 @@ public class DiscordManager extends ListenerAdapter {
 
     @Override
     public void onReady(ReadyEvent event) {
-        String guildId = saLink.getConfig()
-                .getString("discord.guild-id");
+        Guild guild = null;
 
-        Guild guild = event.getJDA().getGuildById(guildId);
-        adminRoleIds = (List<String>) saLink.getConfig().getList("discord.admin-roles-ids");
+        try {
+            String guildId = saLink.getConfig()
+                    .getString("discord.guild-id");
 
-        if (guild == null) {
-            saLink.getLogger().warning(
-                    "Botten kunne ikke finde discord serveren."
-            );
+            guild = event.getJDA().getGuildById(guildId);
+            adminRoleIds = (List<String>) saLink.getConfig().getList("discord.admin-roles-ids");
+
+            if (guild == null) {
+                saLink.getLogger().warning(
+                        "Server id is missing."
+                );
+                return;
+            }
+        } catch (NumberFormatException e) {
+            saLink.getLogger().severe("Invalid discord server ID, either server ID is not valid or bot is not in the server!");
             return;
         }
 
@@ -95,6 +102,8 @@ public class DiscordManager extends ListenerAdapter {
                                 + error.getMessage()
                 )
         );
+
+        saLink.getLogger().info("DISCORD BOT SUCCESSFULLY STARTED");
     }
 
     @Override

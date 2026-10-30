@@ -37,7 +37,7 @@ public class SQLManager {
 
             con.createStatement().execute("PRAGMA foreign_keys = ON;");
 
-            saLink.getLogger().info("SALINK: DATABASE CONNECTED");
+            saLink.getLogger().info("DATABASE CONNECTED");
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -52,7 +52,7 @@ public class SQLManager {
 
         try {
             con.close();
-            saLink.getLogger().info("SALINK: DATABASE DISCONNECTED");
+            saLink.getLogger().info("DATABASE DISCONNECTED");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -104,7 +104,7 @@ public class SQLManager {
             );
 
 
-            console.sendMessage("SALINK: DATABASE TABLES SETUP COMPLETE");
+            saLink.getLogger().info("DATABASE TABLES SETUP COMPLETE");
 
         } catch (SQLException e) {
             e.printStackTrace();
