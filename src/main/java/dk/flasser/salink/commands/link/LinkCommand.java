@@ -5,7 +5,6 @@ import dk.flasser.salink.SALink;
 import dk.flasser.salink.managers.CacheManager;
 import dk.flasser.salink.managers.LinkManager;
 
-import eu.okaeri.commands.annotation.Arg;
 import eu.okaeri.commands.annotation.Context;
 import eu.okaeri.commands.annotation.Executor;
 import eu.okaeri.commands.bukkit.annotation.Async;
@@ -32,6 +31,7 @@ public class LinkCommand implements CommandService {
             @Context Player player
     ) {
         String code = cacheManager.genCode();
+        cacheManager.removeCodeCache(player.getUniqueId());
         cacheManager.addCodeCache(code, player.getUniqueId());
         player.sendMessage(new String[]{
                 "§8[ §f§lLINK §e§lSYSTEM §8]",

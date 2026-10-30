@@ -23,6 +23,10 @@ public class CacheManager {
         codes.remove(code);
     }
 
+    public void removeCodeCache(UUID uuid) {
+        codes.entrySet().removeIf(entry -> entry.getValue().equals(uuid));
+    }
+
     public boolean containsCodeCache(String code) {
         return  codes.containsKey(code);
     }
