@@ -42,18 +42,8 @@ public class LinkCommand implements CommandService {
 
     @Executor
     public void sa(
-            @Context Player player,
-            @Arg("sa") String sa
+            @Context Player player
     ) {
-        if (!(sa.toLowerCase() == "sa")) {
-            player.sendMessage(new String[]{
-                    "§8[ §fLINK §eSYSTEM §8]",
-                    " §7Denne kommando findes ikke.",
-                    " §7Prøv med §f/link §7eller §f/link sa"
-            });
-            return;
-        }
-
         Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
             try {
                 String discordID = superawesomeAPI.getDiscordID(player.getName());

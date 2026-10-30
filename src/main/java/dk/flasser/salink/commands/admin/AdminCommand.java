@@ -28,7 +28,7 @@ public class AdminCommand implements CommandService {
     private @Inject SALink saLink;
 
     @Executor
-    public void other(
+    public void view(
             @Context Player player,
             @Arg("target") String target
     ) {

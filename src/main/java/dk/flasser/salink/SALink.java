@@ -28,19 +28,6 @@ public final class SALink extends OkaeriBukkitPlugin {
         int pluginId = 34980;
         Metrics metrics = new Metrics(this, pluginId);
 
-        getLogger().info("SALINK: STARTING DISCORD BOT");
-        String token = getConfig().getString("discord.token");
-
-        if (token == null || token.isEmpty()
-                || token.equals("PUT_YOUR_BOT_TOKEN_HERE")) {
-            getLogger().warning("Discord bot token is missing!");
-            return;
-        }
-
-        jda = JDABuilder.createDefault(token)
-                .addEventListeners(new DiscordManager())
-                .build();
-
         this.getLogger().info("SALINK: CONNECTING TO DATABASE");
         sqlManager.connect();
 
@@ -48,6 +35,19 @@ public final class SALink extends OkaeriBukkitPlugin {
             this.getLogger().info("SALINK: SETTING UP DATABASE");
             sqlManager.setUp();
         }
+
+        getLogger().info("SALINK: STARTING DISCORD BOT");
+        String token = getConfig().getString("discord.token");
+
+        if (token == null || token.isEmpty()
+                || token.equals("YOUR_BOT_TOKEN")) {
+            getLogger().warning("Discord bot token is missing!");
+            return;
+        }
+
+        jda = JDABuilder.createDefault(token)
+                .addEventListeners(new DiscordManager())
+                .build();
     }
 
     @Planned(ExecutionPhase.SHUTDOWN)

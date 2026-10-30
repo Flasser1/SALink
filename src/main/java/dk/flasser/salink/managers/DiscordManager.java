@@ -25,7 +25,7 @@ public class DiscordManager extends ListenerAdapter {
     private @Inject LinkManager linkManager;
     private @Inject CacheManager cacheManager;
 
-    List<String> adminRoleIds = (List<String>) saLink.getConfig().getList("discord.admin-roles-ids");
+    List<String> adminRoleIds;
 
     @Override
     public void onReady(ReadyEvent event) {
@@ -33,6 +33,7 @@ public class DiscordManager extends ListenerAdapter {
                 .getString("discord.guild-id");
 
         Guild guild = event.getJDA().getGuildById(guildId);
+        adminRoleIds = (List<String>) saLink.getConfig().getList("discord.admin-roles-ids");
 
         if (guild == null) {
             saLink.getLogger().warning(
