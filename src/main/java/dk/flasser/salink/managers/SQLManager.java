@@ -1,6 +1,7 @@
 package dk.flasser.salink.managers;
 
 import dk.flasser.salink.SALink;
+
 import eu.okaeri.injector.annotation.Inject;
 import eu.okaeri.platform.core.annotation.Component;
 

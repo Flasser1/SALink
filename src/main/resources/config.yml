@@ -1,5 +1,14 @@
 discord:
   token: "YOUR_BOT_TOKEN"
+
+  #Insert your discord server's id in this field.
+  #you can get the server id by enabling discord developer mode in your settings, then right clicking on the server and selecting "Copy Server ID"
   guild-id: "YOUR_SERVER_ID"
+
+  #This is a list of all roles that should have access to the logsdiscord command through the discord service.
+  #Each entry in the list has to be surrounded by "" such as "871443009718349826".
+  #You can add as many entires as you want
+  #you can get the role id by enabling discord developer mode in your settings, then right clicking on a role and selecting "Copy Role ID"
   admin-roles-ids:
-    -
+    - "DISCORD_ADMIN_ROLE_1_ID"
+    - "DISCORD_ADMIN_ROLE_2_ID"

@@ -1,16 +1,17 @@
 package dk.flasser.salink.managers;
 
 import dk.flasser.salink.SALink;
+
 import eu.okaeri.injector.annotation.Inject;
 import eu.okaeri.platform.core.annotation.Component;
+
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -23,6 +24,8 @@ public class DiscordManager extends ListenerAdapter {
     private @Inject SALink saLink;
     private @Inject LinkManager linkManager;
     private @Inject CacheManager cacheManager;
+
+    List<String> adminRoleIds = (List<String>) saLink.getConfig().getList("discord.admin-roles-ids");
 
     @Override
     public void onReady(ReadyEvent event) {
@@ -72,6 +75,24 @@ public class DiscordManager extends ListenerAdapter {
                     "Failed to register /unlink: "
                             + error.getMessage()
             )
+        );
+
+        guild.upsertCommand(
+                "logsdiscord",
+                "Tjek link historie for en bruger."
+        ).addOption(
+                OptionType.STRING,
+                "discord-id",
+                "Brugerens discord-id",
+                true
+        ).queue(
+                command -> saLink.getLogger().info(
+                        "Registered /logsdiscord command!"
+                ),
+                error -> saLink.getLogger().severe(
+                        "Failed to register /logsdiscord: "
+                                + error.getMessage()
+                )
         );
     }
 
@@ -130,6 +151,13 @@ public class DiscordManager extends ListenerAdapter {
 
         if (event.getName().equals("logsdiscord")) {
             Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
+                boolean hasAccess = event.getMember().getRoles().stream().anyMatch(role -> adminRoleIds.contains(role.getId()));
+
+                if (!hasAccess) {
+                    event.reply("Du har ikke adgang til dette").setEphemeral(true).queue();
+                    return;
+                }
+
                 String target = event.getOption("discord-id").getAsString();
 
                 List<LinkManager.LinkedAccount> accounts = linkManager.getLinkedAll(target);

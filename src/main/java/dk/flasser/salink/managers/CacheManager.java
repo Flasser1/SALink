@@ -2,7 +2,6 @@ package dk.flasser.salink.managers;
 
 import eu.okaeri.platform.core.annotation.Component;
 import org.apache.commons.lang.RandomStringUtils;
-import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.Map;

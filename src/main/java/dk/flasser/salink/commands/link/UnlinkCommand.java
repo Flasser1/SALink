@@ -3,7 +3,6 @@ package dk.flasser.salink.commands.link;
 import dk.flasser.salink.SALink;
 import dk.flasser.salink.managers.LinkManager;
 
-import eu.okaeri.commands.annotation.Arg;
 import eu.okaeri.commands.annotation.Context;
 import eu.okaeri.commands.annotation.Executor;
 import eu.okaeri.commands.bukkit.annotation.Async;
@@ -12,7 +11,6 @@ import eu.okaeri.injector.annotation.Inject;
 import eu.okaeri.platform.core.annotation.Component;
 
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.List;

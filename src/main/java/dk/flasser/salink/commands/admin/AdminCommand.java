@@ -2,14 +2,15 @@ package dk.flasser.salink.commands.admin;
 
 import dk.flasser.salink.SALink;
 import dk.flasser.salink.managers.LinkManager;
+
 import eu.okaeri.commands.annotation.Arg;
 import eu.okaeri.commands.annotation.Context;
 import eu.okaeri.commands.annotation.Executor;
 import eu.okaeri.commands.bukkit.annotation.Async;
 import eu.okaeri.injector.annotation.Inject;
 import eu.okaeri.platform.core.annotation.Component;
+
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.Date;
@@ -18,7 +19,7 @@ import java.util.UUID;
 
 @Component
 @eu.okaeri.commands.annotation.Command(
-        label = "unlink"
+        label = "linkadmin"
 )
 @Async
 public class AdminCommand {
@@ -26,21 +27,15 @@ public class AdminCommand {
     private @Inject SALink saLink;
 
     @Executor
-    public void _def(
-            @Context Player player
-    ) {
-        player.sendMessage(new String[]{
-                "§8[ §fLINK §eSYSTEM §8]",
-                " §7Din link kode er §f",
-                " §7Du kan også linke direkte til din SA konto med §f/link sa"
-        });
-    }
-
-    @Executor
     public void other(
             @Context Player player,
             @Arg("target") String target
     ) {
+        if (!player.hasPermission("salink.admin")) {
+            player.sendMessage("§7Dette har du ikke adgang til.");
+            return;
+        }
+
         Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
             List<LinkManager.LinkedAccount> accounts = linkManager.getLinkedAll(target);
 

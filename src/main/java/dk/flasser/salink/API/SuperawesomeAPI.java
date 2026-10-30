@@ -1,6 +1,7 @@
 package dk.flasser.salink.API;
 
 import eu.okaeri.platform.core.annotation.Component;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
