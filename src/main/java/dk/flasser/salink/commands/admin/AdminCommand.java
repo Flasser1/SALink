@@ -33,7 +33,7 @@ public class AdminCommand implements CommandService {
     @Executor(pattern = "reload")
     @Permission({"naturalstuff.*", "naturalcoinflip.*", "naturalcoinflip.cfa.*", "naturalcoinflip.cfa.reload"})
     public void reload(@Context Player player) {
-        saLink.saveDefaultConfig();
+        saLink.reloadConfig();
         discordManager.reload();
         player.sendMessage(new String[]{
                 "§8[ §f§lLINK §e§lSYSTEM §8]",
