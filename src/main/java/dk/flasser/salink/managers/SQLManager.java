@@ -94,23 +94,12 @@ public class SQLManager {
         }
 
         try {
-            con.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS Discord (" +
-                    "ID VARCHAR(20) PRIMARY KEY" +
-                    ");");
-
-            con.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS Minecraft (" +
-                    "UUID VARCHAR(36) PRIMARY KEY " +
-                    ");");
-
-
             con.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS Linked (" +
                     "ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "DiscordID VARCHAR(20) NOT NULL, " +
                     "MinecraftUUID VARCHAR(36) NOT NULL, " +
                     "Active INTEGER NOT NULL DEFAULT 0, " +
-                    "TimeDate BIGINT NOT NULL, " +
-                    "FOREIGN KEY (DiscordID) REFERENCES Discord(ID) ON DELETE CASCADE, " +
-                    "FOREIGN KEY (MinecraftUUID) REFERENCES Minecraft(UUID) ON DELETE CASCADE" +
+                    "TimeDate BIGINT NOT NULL " +
                     ");"
             );
 
