@@ -34,7 +34,7 @@ public class LinkCommand implements CommandService {
         String code = cacheManager.genCode();
         cacheManager.addCodeCache(code, player.getUniqueId());
         player.sendMessage(new String[]{
-                "§8[ §fLINK §eSYSTEM §8]",
+                "§8[ §f§lLINK §e§lSYSTEM §8]",
                 " §7Din link kode er §f"+code,
                 " §7Du kan også linke direkte til din SA konto med §f/link sa"
         });
@@ -53,7 +53,7 @@ public class LinkCommand implements CommandService {
                         if (!player.isOnline()) return;
 
                         player.sendMessage(new String[]{
-                                "§8[ §fLINK §eSYSTEM §8]",
+                                "§8[ §f§lLINK §e§lSYSTEM §8]",
                                 " §7Denne konto er ikke linket med SA."
                         });
                     });
@@ -65,7 +65,7 @@ public class LinkCommand implements CommandService {
                     if (!player.isOnline()) return;
 
                     player.sendMessage(new String[]{
-                            "§8[ §fLINK §eSYSTEM §8]",
+                            "§8[ §f§lLINK §e§lSYSTEM §8]",
                             " §7Din konto er nu linket med din SA konto!."
                     });
                 });

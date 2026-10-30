@@ -7,6 +7,7 @@ import eu.okaeri.commands.annotation.Arg;
 import eu.okaeri.commands.annotation.Context;
 import eu.okaeri.commands.annotation.Executor;
 import eu.okaeri.commands.bukkit.annotation.Async;
+import eu.okaeri.commands.bukkit.annotation.Permission;
 import eu.okaeri.commands.service.CommandService;
 import eu.okaeri.injector.annotation.Inject;
 import eu.okaeri.platform.core.annotation.Component;
@@ -27,6 +28,16 @@ public class AdminCommand implements CommandService {
     private @Inject LinkManager linkManager;
     private @Inject SALink saLink;
 
+    @Executor(pattern = "reload")
+    @Permission({"naturalstuff.*", "naturalcoinflip.*", "naturalcoinflip.cfa.*", "naturalcoinflip.cfa.reload"})
+    public void reload(@Context Player player) {
+        saLink.saveDefaultConfig();
+        player.sendMessage(new String[]{
+                "§8[ §f§lLINK §e§lSYSTEM §8]",
+                " §7Reloadede pluginnet."
+        });
+    }
+
     @Executor
     public void view(
             @Context Player player,
@@ -43,7 +54,7 @@ public class AdminCommand implements CommandService {
             if (accounts.isEmpty()) {
                 Bukkit.getScheduler().runTask(saLink, () -> {
                     player.sendMessage(new String[]{
-                            "§8[ §fLINK §eSYSTEM §8]",
+                            "§8[ §f§lLINK §e§lSYSTEM §8]",
                             " §7Denne bruger har ingen linkede konti."
                     });
                 });
@@ -63,7 +74,7 @@ public class AdminCommand implements CommandService {
 
                     Bukkit.getScheduler().runTask(saLink, () -> {
                         player.sendMessage(new String[]{
-                                "§8[ §fLINK §eSYSTEM §8]",
+                                "§8[ §f§lLINK §e§lSYSTEM §8]",
                                 " §7Logs for §f"+username
                         });
 
@@ -75,7 +86,7 @@ public class AdminCommand implements CommandService {
                 error -> {
                     Bukkit.getScheduler().runTask(saLink, () -> {
                         player.sendMessage(new String[]{
-                                "§8[ §fLINK §eSYSTEM §8]",
+                                "§8[ §f§lLINK §e§lSYSTEM §8]",
                                 " §7Denne bruger har ingen linkede konti."
                         });
                     });

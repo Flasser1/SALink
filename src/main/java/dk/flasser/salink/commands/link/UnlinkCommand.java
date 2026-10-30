@@ -40,7 +40,7 @@ public class UnlinkCommand implements CommandService {
 
             Bukkit.getScheduler().runTask(saLink, () -> {
                 player.sendMessage(new String[]{
-                        "§8[ §fLINK §eSYSTEM §8]",
+                        "§8[ §f§lLINK §e§lSYSTEM §8]",
                         " §7Du er nu unlinket."
                 });
             });
