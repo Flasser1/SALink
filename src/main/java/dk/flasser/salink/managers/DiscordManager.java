@@ -30,6 +30,14 @@ public class DiscordManager extends ListenerAdapter {
     Map<String, Long> roles = new HashMap<>();
     long guildId;
 
+    public long getGuild() {
+        return guildId;
+    }
+
+    public Map<String, Long> getRoles() {
+        return roles;
+    }
+
     @Override
     public void onReady(ReadyEvent event) {
         Guild guild = null;
