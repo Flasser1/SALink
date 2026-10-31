@@ -42,7 +42,7 @@ public class UnlinkCommand implements CommandService {
 
             for (String discordID : discordIDs) {
                 linkManager.removeLink(discordID, uuid);
-                discordManager.unlink(player, Long.valueOf(discordID));
+                discordManager.unlink(Long.valueOf(discordID));
             }
 
             Bukkit.getScheduler().runTask(saLink, () -> {
