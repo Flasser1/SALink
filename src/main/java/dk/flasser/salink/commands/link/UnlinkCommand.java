@@ -40,30 +40,9 @@ public class UnlinkCommand implements CommandService {
         Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
             List<String> discordIDs = linkManager.getLinkedActive(uuid);
 
-            Guild guild = saLink.getJDA().getGuildById(discordManager.getGuild());
-            Map<String, Long> roles = discordManager.getRoles();
-
             for (String discordID : discordIDs) {
                 linkManager.removeLink(discordID, uuid);
-                Member member = guild.getMemberById(discordID);
-
-                roles.forEach((name, id) -> {
-                    Role role = guild.getRoleById(id);
-
-                    if (player.hasPermission("group."+name)) {
-                        if (role != null) guild.removeRoleFromMember(member, role).queue();
-                        else saLink.getLogger().info("No role was found with ID: "+id);
-                    }
-                });
-
-                Role linkRole = guild.getRoleById(saLink.getConfig().getLong("discord.link-role"));
-                if (linkRole != null) guild.removeRoleFromMember(member, linkRole).queue();
-                else saLink.getLogger().info("No role was found with ID: "+linkRole);
-
-                guild.modifyNickname(
-                        member,
-                        null
-                ).queue();
+                discordManager.unlink(player, Long.valueOf(discordID));
             }
 
             Bukkit.getScheduler().runTask(saLink, () -> {

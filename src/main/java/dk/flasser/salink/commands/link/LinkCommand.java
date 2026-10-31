@@ -67,32 +67,12 @@ public class LinkCommand implements CommandService {
                     });
                     return;
                 }
-                linkManager.addLink(discordID, player.getUniqueId());
 
-                Guild guild = saLink.getJDA().getGuildById(discordManager.getGuild());
-                Map<String, Long> roles = discordManager.getRoles();
-                Member member = guild.getMemberById(discordID);
+                linkManager.addLink(discordID, player.getUniqueId());
+                discordManager.link(player, Long.valueOf(discordID));
 
                 Bukkit.getScheduler().runTask(saLink, () -> {
                     if (!player.isOnline()) return;
-
-                    roles.forEach((name, id) -> {
-                        Role role = guild.getRoleById(id);
-
-                        if (player.hasPermission("group."+name)) {
-                            if (role != null) guild.addRoleToMember(member, role).queue();
-                            else saLink.getLogger().info("No role was found with ID: "+id);
-                        }
-                    });
-
-                    Role linkRole = guild.getRoleById(saLink.getConfig().getLong("discord.link-role"));
-                    if (linkRole != null) guild.addRoleToMember(member, linkRole).queue();
-                    else saLink.getLogger().info("No role was found with ID: "+linkRole);
-
-                    guild.modifyNickname(
-                            member,
-                            player.getName()
-                    ).queue();
 
                     player.sendMessage(new String[]{
                             "§8[ §f§lLINK §e§lSYSTEM §8]",

@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 
 import java.util.*;
 
@@ -143,33 +144,13 @@ public class DiscordManager extends ListenerAdapter {
                 linkManager.addLink(member.getId(), uuid);
 
                 Bukkit.getScheduler().runTask(saLink, () -> {
-                    try {
-                        roles.forEach((name, id) -> {
-                            Role role = event.getGuild().getRoleById(id);
+                    Player player = Bukkit.getPlayer(uuid);
 
-                            if (Bukkit.getPlayer(uuid).hasPermission("group."+name)) {
-                                if (role != null) event.getGuild().addRoleToMember(member, role).queue();
-                                else saLink.getLogger().info("No role was found with ID: "+id);
-                            }
-                        });
+                    Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
+                        link(player, Long.valueOf(member.getId()));
+                    });
 
-                        Role linkRole = event.getGuild().getRoleById(saLink.getConfig().getLong("discord.link-role"));
-                        if (linkRole != null) event.getGuild().addRoleToMember(member, linkRole).queue();
-                        else saLink.getLogger().info("No role was found with ID: "+linkRole);
-
-                        event.getGuild().modifyNickname(
-                                member,
-                                Bukkit.getOfflinePlayer(uuid).getName()
-                        ).queue();
-
-                        event.getHook().editOriginal("Du er nu linket med din konto.").queue();
-                    } catch (HierarchyException e) {
-                        saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
-
-                        event.getHook().editOriginal(
-                                "Du er nu linket med din konto."
-                        ).queue();
-                    }
+                    event.getHook().editOriginal("Du er nu linket med din konto.").queue();
                 });
             });
         }
@@ -189,32 +170,9 @@ public class DiscordManager extends ListenerAdapter {
                 }
 
                 linkManager.removeLink(member.getId(), player.getUniqueId());
-                assert member != null;
-                try {
-                    roles.forEach((roleName, id) -> {
-                        Role role = event.getGuild().getRoleById(id);
+                unlink(player, Long.valueOf(member.getId()));
 
-                        if (role != null) event.getGuild().removeRoleFromMember(member, role).queue();
-                        else saLink.getLogger().info("No role was found with ID: "+id);
-                    });
-
-                    Role linkRole = event.getGuild().getRoleById(saLink.getConfig().getLong("discord.link-role"));
-                    if (linkRole != null) event.getGuild().removeRoleFromMember(member, linkRole).queue();
-                    else saLink.getLogger().info("No role was found with ID: "+linkRole);
-
-                    event.getGuild().modifyNickname(
-                            member,
-                            null
-                    ).queue();
-
-                    event.getHook().editOriginal("Du er nu unlinket.").queue();
-                } catch (HierarchyException e) {
-                    saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
-
-                    event.getHook().editOriginal(
-                            "Du er nu unlinket."
-                    ).queue();
-                }
+                event.getHook().editOriginal("Du er nu unlinket.").queue();
             });
         }
 
@@ -257,6 +215,58 @@ public class DiscordManager extends ListenerAdapter {
                     }
                 );
             });
+        }
+    }
+
+    public void link(Player player, Long discordID) {
+        Guild guild = saLink.getJDA().getGuildById(guildId);
+        Member member = guild.getMemberById(discordID);
+
+        roles.forEach((name, id) -> {
+            Role role = guild.getRoleById(id);
+
+            if (player.hasPermission("group."+name)) {
+                if (role != null) guild.addRoleToMember(member, role).queue();
+                else saLink.getLogger().info("No role was found with ID: "+id);
+            }
+        });
+
+        Role linkRole = guild.getRoleById(saLink.getConfig().getLong("discord.link-role"));
+        if (linkRole != null) guild.addRoleToMember(member, linkRole).queue();
+        else saLink.getLogger().info("No role was found with ID: "+linkRole);
+
+        try {
+            guild.modifyNickname(
+                    member,
+                    player.getName()
+            ).queue();
+        } catch (HierarchyException e) {
+            saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
+        }
+    }
+
+    public void unlink(OfflinePlayer player, Long discordID) {
+        Guild guild = saLink.getJDA().getGuildById(guildId);
+        Member member = guild.getMemberById(discordID);
+
+        roles.forEach((roleName, id) -> {
+            Role role = guild.getRoleById(id);
+
+            if (role != null) guild.removeRoleFromMember(member, role).queue();
+            else saLink.getLogger().info("No role was found with ID: "+id);
+        });
+
+        Role linkRole = guild.getRoleById(saLink.getConfig().getLong("discord.link-role"));
+        if (linkRole != null) guild.removeRoleFromMember(member, linkRole).queue();
+        else saLink.getLogger().info("No role was found with ID: "+linkRole);
+
+        try {
+            guild.modifyNickname(
+                    member,
+                    null
+            ).queue();
+        } catch (HierarchyException e) {
+            saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
         }
     }
 
