@@ -7,6 +7,7 @@ import eu.okaeri.platform.core.annotation.Component;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
@@ -15,10 +16,9 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Component
 public class DiscordManager extends ListenerAdapter {
@@ -26,18 +26,25 @@ public class DiscordManager extends ListenerAdapter {
     private @Inject LinkManager linkManager;
     private @Inject CacheManager cacheManager;
 
-    List<String> adminRoleIds;
+    List<Long> adminRoleIds;
+    Map<String, Long> roles = new HashMap<>();
+    long guildId;
 
     @Override
     public void onReady(ReadyEvent event) {
         Guild guild = null;
 
         try {
-            String guildId = saLink.getConfig()
-                    .getString("discord.guild-id");
+            guildId = saLink.getConfig().getLong("discord.guild-id");
 
             guild = event.getJDA().getGuildById(guildId);
-            adminRoleIds = saLink.getConfig().getStringList("discord.admin-roles-ids");
+            adminRoleIds = saLink.getConfig().getLongList("discord.admin-roles-ids");
+            ConfigurationSection section = saLink.getConfig().getConfigurationSection("discord.role-schema");
+            if (section != null) {
+                for (String roleName : section.getKeys(false)) {
+                    roles.put(roleName, section.getLong(roleName));
+                }
+            }
 
             if (guild == null) {
                 saLink.getLogger().warning(
@@ -129,10 +136,24 @@ public class DiscordManager extends ListenerAdapter {
 
                 Bukkit.getScheduler().runTask(saLink, () -> {
                     try {
+                        roles.forEach((name, id) -> {
+                            Role role = event.getGuild().getRoleById(id);
+
+                            if (Bukkit.getPlayer(uuid).hasPermission("group."+name)) {
+                                if (role != null) event.getGuild().addRoleToMember(member, role).queue();
+                                else saLink.getLogger().info("No role was found with ID: "+id);
+                            }
+                        });
+
+                        Role linkRole = event.getGuild().getRoleById(saLink.getConfig().getLong("discord.link-role"));
+                        if (linkRole != null) event.getGuild().addRoleToMember(member, linkRole).queue();
+                        else saLink.getLogger().info("No role was found with ID: "+linkRole);
+
                         event.getGuild().modifyNickname(
                                 member,
                                 Bukkit.getOfflinePlayer(uuid).getName()
                         ).queue();
+
                         event.getHook().editOriginal("Du er nu linket med din konto.").queue();
                     } catch (HierarchyException e) {
                         saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
@@ -162,10 +183,22 @@ public class DiscordManager extends ListenerAdapter {
                 linkManager.removeLink(member.getId(), player.getUniqueId());
                 assert member != null;
                 try {
+                    roles.forEach((roleName, id) -> {
+                        Role role = event.getGuild().getRoleById(id);
+
+                        if (role != null) event.getGuild().removeRoleFromMember(member, role).queue();
+                        else saLink.getLogger().info("No role was found with ID: "+id);
+                    });
+
+                    Role linkRole = event.getGuild().getRoleById(saLink.getConfig().getLong("discord.link-role"));
+                    if (linkRole != null) event.getGuild().removeRoleFromMember(member, linkRole).queue();
+                    else saLink.getLogger().info("No role was found with ID: "+linkRole);
+
                     event.getGuild().modifyNickname(
                             member,
                             null
                     ).queue();
+
                     event.getHook().editOriginal("Du er nu unlinket.").queue();
                 } catch (HierarchyException e) {
                     saLink.getLogger().info("Tried to modify a nickname after a user linked, but ran into a HierarchyException. Make sure that the bot has a higher role than any user. User ID is: "+member.getId());
@@ -220,6 +253,15 @@ public class DiscordManager extends ListenerAdapter {
     }
 
     public void reload() {
-        adminRoleIds = saLink.getConfig().getStringList("discord.admin-roles-ids");
+        adminRoleIds = saLink.getConfig().getLongList("discord.admin-roles-ids");
+        guildId = saLink.getConfig().getLong("discord.guild-id");
+
+        roles.clear();
+        ConfigurationSection section = saLink.getConfig().getConfigurationSection("discord.role-schema");
+        if (section != null) {
+            for (String roleName : section.getKeys(false)) {
+                roles.put(roleName, section.getLong(roleName));
+            }
+        }
     }
 }
