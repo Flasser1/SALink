@@ -76,6 +76,8 @@ public class AdminCommand implements CommandService {
                     String username = user.getName();
 
                     Bukkit.getScheduler().runTask(saLink, () -> {
+                        if (!player.isOnline()) return;
+
                         player.sendMessage(new String[]{
                                 "§8[ §f§lLINK §e§lSYSTEM §8]",
                                 " §7Logs for §f"+username
@@ -89,6 +91,8 @@ public class AdminCommand implements CommandService {
                 },
                 error -> {
                     Bukkit.getScheduler().runTask(saLink, () -> {
+                        if (!player.isOnline()) return;
+
                         player.sendMessage(new String[]{
                                 "§8[ §f§lLINK §e§lSYSTEM §8]",
                                 " §7Denne bruger har ingen linkede konti."

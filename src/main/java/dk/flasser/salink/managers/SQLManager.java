@@ -10,6 +10,7 @@ import org.bukkit.command.ConsoleCommandSender;
 
 import java.io.File;
 import java.sql.*;
+
 @Component
 public class SQLManager {
     private @Inject SALink saLink;

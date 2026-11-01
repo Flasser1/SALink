@@ -11,14 +11,10 @@ import eu.okaeri.commands.service.CommandService;
 import eu.okaeri.injector.annotation.Inject;
 import eu.okaeri.platform.core.annotation.Component;
 
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -46,6 +42,8 @@ public class UnlinkCommand implements CommandService {
             }
 
             Bukkit.getScheduler().runTask(saLink, () -> {
+                if (!player.isOnline()) return;
+
                 player.sendMessage(new String[]{
                         "§8[ §f§lLINK §e§lSYSTEM §8]",
                         " §7Du er nu unlinket."

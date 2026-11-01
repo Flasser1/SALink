@@ -31,14 +31,6 @@ public class DiscordManager extends ListenerAdapter {
     Map<String, Long> roles = new HashMap<>();
     Guild guild = null;
 
-    public Guild getGuild() {
-        return guild;
-    }
-
-    public Map<String, Long> getRoles() {
-        return roles;
-    }
-
     @Override
     public void onReady(ReadyEvent event) {
 
@@ -139,7 +131,8 @@ public class DiscordManager extends ListenerAdapter {
                 UUID uuid = cacheManager.getCode(code);
                 Member member = event.getMember();
 
-                assert member != null;
+                if (member == null) return;
+
                 linkManager.addLink(member.getId(), uuid);
 
                 Bukkit.getScheduler().runTask(saLink, () -> {
@@ -160,6 +153,8 @@ public class DiscordManager extends ListenerAdapter {
 
             Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
                 Member member = event.getMember();
+
+                if (member == null) return;
 
                 if (!linkManager.isLinked(member.getId(), player.getUniqueId())) {
                     event.getHook().editOriginal("Du er ikke linket med denne konto.").queue();
@@ -218,6 +213,7 @@ public class DiscordManager extends ListenerAdapter {
     public void link(Player player, Long discordID) {
         Bukkit.getScheduler().runTask(saLink, () -> {
             Member member = guild.getMemberById(discordID);
+            if (member == null) return;
             String playerName = player.getName();
             long roleID = saLink.getConfig().getLong("discord.link-role");
 
@@ -233,7 +229,7 @@ public class DiscordManager extends ListenerAdapter {
             Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
                 Role linkRole = guild.getRoleById(roleID);
                 if (linkRole != null) guild.addRoleToMember(member, linkRole).queue();
-                else saLink.getLogger().info("No role was found with ID: " + linkRole);
+                else saLink.getLogger().info("No role was found with ID: " + roleID);
 
                 try {
                     guild.modifyNickname(
@@ -254,6 +250,8 @@ public class DiscordManager extends ListenerAdapter {
             Bukkit.getScheduler().runTaskAsynchronously(saLink, () -> {
                 Member member = guild.getMemberById(discordID);
 
+                if (member == null) return;
+
                 roles.forEach((roleName, id) -> {
                     Role role = guild.getRoleById(id);
 
@@ -263,7 +261,7 @@ public class DiscordManager extends ListenerAdapter {
 
                 Role linkRole = guild.getRoleById(roleID);
                 if (linkRole != null) guild.removeRoleFromMember(member, linkRole).queue();
-                else saLink.getLogger().info("No role was found with ID: " + linkRole);
+                else saLink.getLogger().info("No role was found with ID: " + roleID);
 
                 try {
                     guild.modifyNickname(
